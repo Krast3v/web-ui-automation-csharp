@@ -118,10 +118,16 @@ ContextMenuTests.cs      # Right-click context menu and alert handling
 | `Should_ShowAlert_When_HotspotRightClicked` | Right-click triggers alert with context menu message |
 | `Should_DismissAlert_When_AlertAccepted` | Alert is dismissed after accepting |
 
-## Roadmap
-- [x] Migrate all test classes to inherit from `BaseTest`
-- [x] Add GitHub Actions CI/CD pipeline
-- [x] Add screenshot on test failure via `BaseTest`
+## Non-Obvious Implementation Details
+
+**Why `BaseTest` is `abstract`**
+Prevents instantiation of the base class directly — only concrete test classes (e.g. `LoginTests`) can be created. The `[SetUp]` and `[TearDown]` methods are `virtual` so individual test classes can override them if a specific feature needs custom setup, without breaking the shared lifecycle.
+
+**How screenshot on failure works**
+`[TearDown]` checks `TestContext.CurrentContext.Result.Outcome.Status` — if it equals `Failed`, it casts the driver to `ITakesScreenshot` and saves a `.png` to the project root. This requires zero changes in individual test classes — inherited automatically.
+
+**Why `CI` env var controls headless mode**
+`DriverFactory` reads `Environment.GetEnvironmentVariable("CI")` — if `"true"`, adds `--headless` to `ChromeOptions`. This means the same codebase runs headed locally (easier debugging) and headless in GitHub Actions (no display server available on `ubuntu-latest`).
 
 ## Key Concepts Demonstrated
 - Page Object Model (POM)
